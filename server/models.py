@@ -1,27 +1,36 @@
-# server/models.py
+#!/usr/bin/env python3
+# server/seed.py
 
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData
+from random import choice as rc
+from faker import Faker
 
-# Naming convention for Alembic migrations to avoid naming conflicts
-metadata = MetaData(naming_convention={
-    "ix": 'ix_%(column_0_label)s',
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s"
-})
+from app import app
+from models import db, Pet
 
-# Create the database object
-db = SQLAlchemy(metadata=metadata)
 
-# Define the Pet model
-class Pet(db.Model):
-    __tablename__ = 'pets'
+with app.app_context():
+    
+    fake = Faker()
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    species = db.Column(db.String, nullable=False)
 
-    def __repr__(self):
-        return f'<Pet {self.id}, {self.name}, {self.species}>'
+    Pet.query.delete()
+
+
+    species_list = ['Dog', 'Cat', 'Chicken', 'Hamster', 'Turtle']
+
+   
+    pets = []
+
+   
+    for _ in range(10):
+        pet = Pet(
+            name=fake.first_name(),
+            species=rc(species_list)
+        )
+        pets.append(pet)
+
+   
+    db.session.add_all(pets)
+    db.session.commit()
+
+    print("🌱 Successfully seeded 10 random pets!")
